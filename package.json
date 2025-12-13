@@ -1,0 +1,32 @@
+{
+  "name": "bytecodec",
+  "version": "1.0.0",
+  "description": "Zero-dependency base64url <-> Uint8Array codec for browser and Node runtimes.",
+  "keywords": [
+    "base64url",
+    "base64",
+    "Uint8Array",
+    "bytes",
+    "encoding",
+    "decoding",
+    "browser",
+    "node"
+  ],
+  "license": "MIT",
+  "type": "module",
+  "main": "src/index.js",
+  "types": "src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "import": "./src/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "src",
+    "LICENSE",
+    "README.md"
+  ],
+  "sideEffects": false
+}
