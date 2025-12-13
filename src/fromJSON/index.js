@@ -1,15 +1,14 @@
-import { toString } from "../toString/index.js";
+import { fromString } from "../fromString/index.js";
 
 /**
- * Parse bytes into a JavaScript value via JSON.parse.
- * @param {import("../index.d.ts").ByteSource} bytes
- * @returns {any}
+ * Serialize a JavaScript value into UTF-8 JSON bytes.
+ * @param {any} value
+ * @returns {Uint8Array}
  */
-export function fromJSON(bytes) {
-  const jsonString = toString(bytes);
+export function fromJSON(value) {
   try {
-    return JSON.parse(jsonString);
+    return fromString(JSON.stringify(value));
   } catch (error) {
-    throw new Error(`fromJSON failed to parse value: ${error.message}`);
+    throw new Error(`fromJSON failed to stringify value: ${error.message}`);
   }
 }

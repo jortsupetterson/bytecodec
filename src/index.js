@@ -55,20 +55,20 @@ export class Bytes {
   }
 
   /**
-   * Serialize a JS object or value into bytes.
-   * @param {any} value
-   * @returns {Uint8Array}
+   * Parse JSON (string or bytes) into a JS object or value.
+   * @param {import("./index.d.ts").ByteSource | string} value
+   * @returns {any}
    */
   static toJSON(value) {
     return toJSON(value);
   }
 
   /**
-   * Parse bytes back into a JS object or value.
-   * @param {import("./index.d.ts").ByteSource} bytes
-   * @returns {any}
+   * Serialize a JS object or value into bytes.
+   * @param {any} value
+   * @returns {Uint8Array}
    */
-  static fromJSON(bytes) {
-    return fromJSON(bytes);
+  static fromJSON(value) {
+    return fromJSON(value);
   }
 }

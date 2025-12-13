@@ -41,9 +41,13 @@ function testStrings() {
 
 function testJSON() {
   const value = { ok: true, count: 3, nested: ["x", { y: 1 }], nil: null };
-  const jsonBytes = toJSON(value);
+  const jsonBytes = fromJSON(value);
   assert.ok(jsonBytes instanceof Uint8Array);
-  assert.deepStrictEqual(fromJSON(jsonBytes), value);
+  assert.deepStrictEqual(toJSON(jsonBytes), value);
+  assert.deepStrictEqual(
+    toJSON('{"ok":true,"count":3,"nested":["x",{"y":1}],"nil":null}'),
+    value
+  );
   console.log("json value:", JSON.stringify(value));
   console.log("json bytes length:", jsonBytes.byteLength);
 }
@@ -57,9 +61,11 @@ function testBytesWrapper() {
   assert.equal(Bytes.toString(Bytes.fromString(text)), text);
 
   const value = { wrapper: true, items: [1, 2, 3] };
-  assert.deepStrictEqual(Bytes.fromJSON(Bytes.toJSON(value)), value);
+  const jsonBytes = Bytes.fromJSON(value);
+  assert.ok(jsonBytes instanceof Uint8Array);
+  assert.deepStrictEqual(Bytes.toJSON(jsonBytes), value);
   console.log("bytes wrapper encoded:", encoded);
-  console.log("bytes wrapper json:", JSON.stringify(value));
+  console.log("bytes wrapper json bytes length:", jsonBytes.byteLength);
 }
 
 function main() {

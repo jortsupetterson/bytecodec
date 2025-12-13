@@ -1,11 +1,11 @@
 # bytecodec
 
-Lean, zero-dependency byte utilities for base64url, UTF-8 strings, and JSON that behave the same in browsers and Node.
+Zero-dependency byte utilities for base64url, UTF-8 strings, and JSON that behave the same in browsers and Node.
 
-## Why use it
-- URL-safe base64 without padding; no external deps or bundler tricks.
-- UTF-8 encode/decode that accepts `Uint8Array`, `ArrayBuffer`, `ArrayBufferView`, or `number[]`.
-- JSON ⇄ bytes helpers (JSON.stringify/parse + UTF-8) for payloads, tokens, and storage.
+## Highlights
+- URL-safe base64 without padding; no external deps or bundler shims.
+- UTF-8 encode/decode for `Uint8Array`, `ArrayBuffer`, `ArrayBufferView`, or `number[]`.
+- JSON helpers (JSON.stringify/parse + UTF-8) for payloads, tokens, and storage.
 - ESM-first, tree-shakeable, bundled TypeScript definitions, side-effect free.
 
 ## Install
@@ -26,8 +26,8 @@ import {
   fromBase64UrlString,
   fromString,
   toString,
-  toJSON,
-  fromJSON,
+  toJSON, // bytes/string -> value
+  fromJSON, // value -> bytes
   Bytes, // optional class wrapper
 } from "bytecodec";
 
@@ -37,20 +37,21 @@ const encoded = toBase64UrlString(payload); // aGVsbG8
 const decoded = fromBase64UrlString(encoded); // Uint8Array [104, 101, 108, 108, 111]
 
 // UTF-8 strings
-const textBytes = fromString("caffè ✓"); // Uint8Array
-const text = toString(textBytes); // "caffè ✓"
+const textBytes = fromString("caffe and rockets"); // Uint8Array
+const text = toString(textBytes); // "caffe and rockets"
 
 // JSON
-const jsonBytes = toJSON({ ok: true, count: 3 });
-const obj = fromJSON(jsonBytes); // { ok: true, count: 3 }
+const jsonBytes = fromJSON({ ok: true, count: 3 }); // Uint8Array
+const obj = toJSON(jsonBytes); // { ok: true, count: 3 }
+const objFromString = toJSON('{"ok":true,"count":3}'); // also works with a JSON string
 
-// Wrapper mirrors the same methods
+// Wrapper mirrors the same methods (value -> bytes via fromJSON, bytes -> value via toJSON)
 Bytes.toBase64UrlString(payload);
 Bytes.fromBase64UrlString(encoded);
 Bytes.fromString("text");
 Bytes.toString(textBytes);
-Bytes.toJSON({ ok: true });
-Bytes.fromJSON(jsonBytes);
+Bytes.fromJSON({ ok: true });
+Bytes.toJSON(jsonBytes); // or Bytes.toJSON('{"ok":true}')
 ```
 
 ## API snapshot
@@ -58,8 +59,8 @@ Bytes.fromJSON(jsonBytes);
 - `fromBase64UrlString(base64UrlString: Base64URLString): Uint8Array` – decode with length validation.
 - `fromString(text: string): Uint8Array` – UTF-8 encode.
 - `toString(bytes: ByteSource): string` – UTF-8 decode.
-- `toJSON(value: any): Uint8Array` – `JSON.stringify` + UTF-8 encode.
-- `fromJSON(bytes: ByteSource): any` – UTF-8 decode + `JSON.parse`.
+- `toJSON(input: ByteSource | string): any` – UTF-8 decode + `JSON.parse` (bytes or JSON string -> value).
+- `fromJSON(value: any): Uint8Array` – `JSON.stringify` + UTF-8 encode (value -> bytes).
 - `Bytes` – class wrapper exposing the same static methods above.
 
 ### Types
