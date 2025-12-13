@@ -1,10 +1,6 @@
 /**
- * @typedef {string} Base64URLString
- */
-
-/**
  * Decode a base64url string into raw bytes.
- * @param {Base64URLString} base64UrlString
+ * @param {import("../index.d.ts").Base64URLString} base64UrlString
  * @returns {Uint8Array}
  */
 export function fromBase64UrlString(base64UrlString) {
@@ -13,7 +9,7 @@ export function fromBase64UrlString(base64UrlString) {
 }
 
 /**
- * @param {Base64URLString} base64UrlString
+ * @param {import("../index.d.ts").Base64URLString} base64UrlString
  * @returns {string}
  */
 function toBase64String(base64UrlString) {

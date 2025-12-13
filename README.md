@@ -1,15 +1,14 @@
 # bytecodec
 
-Tiny, dependency-free base64url <-> `Uint8Array` codec that works in both browsers and Node runtimes.
+Lean, zero-dependency byte utilities for base64url, UTF-8 strings, and JSON that behave the same in browsers and Node.
 
-## Features
-- Base64URL encode/decode with zero dependencies
-- Works in browsers (`btoa`/`atob`) and Node (`Buffer`) automatically
-- Accepts `Uint8Array`, `ArrayBuffer`, `ArrayBufferView`, or `number[]`
-- Tree-shakeable ESM with bundled TypeScript definitions
-- No side effects; safe to import anywhere you need these conversions
+## Why use it
+- URL-safe base64 without padding; no external deps or bundler tricks.
+- UTF-8 encode/decode that accepts `Uint8Array`, `ArrayBuffer`, `ArrayBufferView`, or `number[]`.
+- JSON ⇄ bytes helpers (JSON.stringify/parse + UTF-8) for payloads, tokens, and storage.
+- ESM-first, tree-shakeable, bundled TypeScript definitions, side-effect free.
 
-## Installation
+## Install
 
 ```sh
 npm install bytecodec
@@ -19,34 +18,49 @@ pnpm add bytecodec
 yarn add bytecodec
 ```
 
-## Usage
+## Quick start
 
 ```js
-import { toBase64UrlString, fromBase64UrlString, Bytes } from "bytecodec";
+import {
+  toBase64UrlString,
+  fromBase64UrlString,
+  fromString,
+  toString,
+  toJSON,
+  fromJSON,
+  Bytes, // optional class wrapper
+} from "bytecodec";
 
+// Base64URL
 const payload = new Uint8Array([104, 101, 108, 108, 111]); // "hello"
+const encoded = toBase64UrlString(payload); // aGVsbG8
+const decoded = fromBase64UrlString(encoded); // Uint8Array [104, 101, 108, 108, 111]
 
-const encoded = toBase64UrlString(payload);
-// aGVsbG8
+// UTF-8 strings
+const textBytes = fromString("caffè ✓"); // Uint8Array
+const text = toString(textBytes); // "caffè ✓"
 
-const decoded = fromBase64UrlString(encoded);
-// Uint8Array(5) [104, 101, 108, 108, 111]
+// JSON
+const jsonBytes = toJSON({ ok: true, count: 3 });
+const obj = fromJSON(jsonBytes); // { ok: true, count: 3 }
 
-// Optional convenience wrapper
+// Wrapper mirrors the same methods
 Bytes.toBase64UrlString(payload);
 Bytes.fromBase64UrlString(encoded);
+Bytes.fromString("text");
+Bytes.toString(textBytes);
+Bytes.toJSON({ ok: true });
+Bytes.fromJSON(jsonBytes);
 ```
 
-## API
-
-- `toBase64UrlString(bytes: ByteSource): Base64URLString`  
-  Encode bytes into an RFC 4648 base64url string (no padding). Throws if the environment cannot encode base64 or if the input is not a supported byte source.
-
-- `fromBase64UrlString(base64UrlString: Base64URLString): Uint8Array`  
-  Decode a base64url string back into raw bytes. Throws on invalid input or if the environment cannot decode base64.
-
-- `Bytes`  
-  A tiny class wrapper exposing the same static methods above.
+## API snapshot
+- `toBase64UrlString(bytes: ByteSource): Base64URLString` – RFC 4648 base64url encoding (no padding).
+- `fromBase64UrlString(base64UrlString: Base64URLString): Uint8Array` – decode with length validation.
+- `fromString(text: string): Uint8Array` – UTF-8 encode.
+- `toString(bytes: ByteSource): string` – UTF-8 decode.
+- `toJSON(value: any): Uint8Array` – `JSON.stringify` + UTF-8 encode.
+- `fromJSON(bytes: ByteSource): any` – UTF-8 decode + `JSON.parse`.
+- `Bytes` – class wrapper exposing the same static methods above.
 
 ### Types
 
@@ -55,10 +69,18 @@ type Base64URLString = string;
 type ByteSource = Uint8Array | ArrayBuffer | ArrayBufferView | number[];
 ```
 
-## Environment support
-- Node: uses `Buffer.from` when available (Node 14+ recommended)
-- Browser/edge runtimes: falls back to `btoa`/`atob`
-- No DOM or fetch dependencies; safe for workers
+## Runtime behavior
+- Node: uses `Buffer.from` for base64/UTF-8.
+- Browsers/edge runtimes: uses `TextEncoder`/`TextDecoder` and `btoa`/`atob`.
+- Throws clear errors when the host cannot encode/decode.
+
+## Testing
+
+```sh
+npm test
+# or
+node test.js
+```
 
 ## License
 

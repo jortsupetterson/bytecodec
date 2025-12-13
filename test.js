@@ -1,14 +1,76 @@
+import assert from "node:assert/strict";
 import { randomBytes } from "node:crypto";
-import { toBase64UrlString, fromBase64UrlString } from "./src/index.js";
+import {
+  toBase64UrlString,
+  fromBase64UrlString,
+  fromString,
+  toString,
+  toJSON,
+  fromJSON,
+  Bytes,
+} from "./src/index.js";
 
-const iterations = 1000;
-const payload = randomBytes(64 * 1024);
-const encoded = toBase64UrlString(payload);
+function runTest(name, fn) {
+  console.time(name);
+  fn();
+  console.timeEnd(name);
+  console.log(`✔ ${name}`);
+}
 
-console.time("to");
-for (let i = 0; i < iterations; i++) toBase64UrlString(payload);
-console.timeEnd("to");
+function testBase64() {
+  const payload = randomBytes(32);
+  const encoded = toBase64UrlString(payload);
+  const decoded = fromBase64UrlString(encoded);
+  assert.deepStrictEqual(Buffer.from(decoded), Buffer.from(payload));
+  console.log("base64 sample encoded:", encoded);
+  console.log("base64 payload length:", payload.byteLength);
 
-console.time("from");
-for (let i = 0; i < iterations; i++) fromBase64UrlString(encoded);
-console.timeEnd("from");
+  const helloBytes = fromString("hello");
+  assert.equal(toBase64UrlString(helloBytes), "aGVsbG8");
+  assert.deepStrictEqual(fromBase64UrlString("aGVsbG8"), helloBytes);
+  console.log("base64 hello bytes:", [...helloBytes]);
+}
+
+function testStrings() {
+  const text = "héllo ✓ rocket 🚀";
+  const bytes = fromString(text);
+  assert.equal(toString(bytes), text);
+  console.log("strings input:", text);
+  console.log("strings byte length:", bytes.byteLength);
+}
+
+function testJSON() {
+  const value = { ok: true, count: 3, nested: ["x", { y: 1 }], nil: null };
+  const jsonBytes = toJSON(value);
+  assert.ok(jsonBytes instanceof Uint8Array);
+  assert.deepStrictEqual(fromJSON(jsonBytes), value);
+  console.log("json value:", JSON.stringify(value));
+  console.log("json bytes length:", jsonBytes.byteLength);
+}
+
+function testBytesWrapper() {
+  const payload = Uint8Array.from([1, 2, 3, 4]);
+  const encoded = Bytes.toBase64UrlString(payload);
+  assert.deepStrictEqual(Bytes.fromBase64UrlString(encoded), payload);
+
+  const text = "wrapper check";
+  assert.equal(Bytes.toString(Bytes.fromString(text)), text);
+
+  const value = { wrapper: true, items: [1, 2, 3] };
+  assert.deepStrictEqual(Bytes.fromJSON(Bytes.toJSON(value)), value);
+  console.log("bytes wrapper encoded:", encoded);
+  console.log("bytes wrapper json:", JSON.stringify(value));
+}
+
+function main() {
+  console.log("Running bytecodec tests...");
+  console.time("total");
+  runTest("base64", testBase64);
+  runTest("strings", testStrings);
+  runTest("json", testJSON);
+  runTest("bytes-wrapper", testBytesWrapper);
+  console.timeEnd("total");
+  console.log("All tests passed ✅");
+}
+
+main();
