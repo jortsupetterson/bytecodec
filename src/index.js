@@ -6,6 +6,7 @@ import { fromJSON } from "./fromJSON/index.js";
 import { toJSON } from "./toJSON/index.js";
 import { toCompressed } from "./toCompressed/index.js";
 import { fromCompressed } from "./fromCompressed/index.js";
+import { concat } from "./concat/index.js";
 
 export {
   fromBase64UrlString,
@@ -16,6 +17,7 @@ export {
   toJSON,
   toCompressed,
   fromCompressed,
+  concat,
 };
 
 /**
@@ -92,5 +94,13 @@ export class Bytes {
    */
   static fromCompressed(bytes) {
     return fromCompressed(bytes);
+  }
+  /**
+   * Combines ByteSources into one ByteSource / Byte array
+   * @param {import("./index.d.ts").ByteSource[]} sources
+   * @returns {Uint8Array}
+   */
+  static concat(sources) {
+    return concat(sources);
   }
 }

@@ -31,6 +31,7 @@ import {
   fromJSON, // value -> bytes
   toCompressed, // gzip: bytes -> bytes (Promise)
   fromCompressed, // gzip: bytes -> bytes (Promise)
+  concat, // join multiple byte sources
   Bytes, // optional class wrapper
 } from "bytecodec";
 
@@ -52,6 +53,9 @@ const objFromString = toJSON('{"ok":true,"count":3}'); // also works with a JSON
 const compressed = await toCompressed(textBytes);
 const restored = await fromCompressed(compressed);
 
+// Concatenate
+const joined = concat([textBytes, [33, 34]]); // Uint8Array [..textBytes, 33, 34]
+
 // Wrapper mirrors the same methods (value -> bytes via fromJSON, bytes -> value via toJSON)
 Bytes.toBase64UrlString(payload);
 Bytes.fromBase64UrlString(encoded);
@@ -61,6 +65,7 @@ Bytes.fromJSON({ ok: true });
 Bytes.toJSON(jsonBytes); // or Bytes.toJSON('{"ok":true}')
 await Bytes.toCompressed(payload);
 await Bytes.fromCompressed(compressed);
+Bytes.concat([payload, [1, 2, 3]]);
 ```
 
 ## API snapshot
@@ -73,6 +78,7 @@ await Bytes.fromCompressed(compressed);
 - `fromJSON(value: any): Uint8Array` - `JSON.stringify` + UTF-8 encode (value -> bytes).
 - `toCompressed(bytes: ByteSource): Promise<Uint8Array>` - gzip compress bytes (Node zlib or browser CompressionStream).
 - `fromCompressed(bytes: ByteSource): Promise<Uint8Array>` - gzip decompress bytes (Node zlib or browser DecompressionStream).
+- `concat(sources: ByteSource[]): Uint8Array` - normalize and join multiple byte sources into one Uint8Array.
 - `Bytes` - class wrapper exposing the same static methods above.
 
 ### Types

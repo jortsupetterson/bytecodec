@@ -9,6 +9,7 @@ import {
   fromJSON,
   toCompressed,
   fromCompressed,
+  concat,
   Bytes,
 } from "./src/index.js";
 
@@ -63,6 +64,22 @@ async function testCompression() {
   console.log("compression compressed length:", compressed.byteLength);
 }
 
+async function testConcat() {
+  const left = Uint8Array.from([1, 2, 3]);
+  const right = [4, 5];
+  const buffer = new Uint8Array([6, 7]).buffer;
+  const dataView = new DataView(new Uint8Array([8, 9, 10, 11]).buffer, 1, 2); // bytes 9, 10
+
+  const merged = concat([left, right, buffer, dataView]);
+  assert.deepStrictEqual([...merged], [1, 2, 3, 4, 5, 6, 7, 9, 10]);
+  assert.deepStrictEqual(concat([]), new Uint8Array(0));
+
+  assert.throws(() => concat("oops"), /array of ByteSource/i);
+  assert.throws(() => concat([new Uint8Array([1]), "oops"]), /index 1/i);
+
+  console.log("concat merged length:", merged.byteLength);
+}
+
 async function testBytesWrapper() {
   const payload = Uint8Array.from([1, 2, 3, 4]);
   const encoded = Bytes.toBase64UrlString(payload);
@@ -80,6 +97,9 @@ async function testBytesWrapper() {
   const restored = await Bytes.fromCompressed(compressed);
   assert.deepStrictEqual(Buffer.from(restored), Buffer.from(payload));
 
+  const joined = Bytes.concat([payload, [5, 6]]);
+  assert.deepStrictEqual([...joined], [1, 2, 3, 4, 5, 6]);
+
   console.log("bytes wrapper encoded:", encoded);
   console.log("bytes wrapper json bytes length:", jsonBytes.byteLength);
   console.log("bytes wrapper compressed length:", compressed.byteLength);
@@ -92,6 +112,7 @@ async function main() {
   await runTest("strings", testStrings);
   await runTest("json", testJSON);
   await runTest("compression", testCompression);
+  await runTest("concat", testConcat);
   await runTest("bytes-wrapper", testBytesWrapper);
   console.timeEnd("total");
   console.log("All tests passed ✅");
