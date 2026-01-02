@@ -1,30 +1,21 @@
-import {
-  normalizeToUint8Array,
-  isNodeRuntime,
-} from "../0-HELPERS/index.js";
+import { normalizeToUint8Array, isNodeRuntime } from "../0-HELPERS/index.js";
+import type { ByteSource } from "../index.js";
 
-/**
- * Gzip-decompress bytes. Returns a Promise to support browser streams.
- * @param {import("../index.d.ts").ByteSource} bytes
- * @returns {Promise<Uint8Array>}
- */
-export async function fromCompressed(bytes) {
+export async function fromCompressed(bytes: ByteSource): Promise<Uint8Array> {
   const view = normalizeToUint8Array(bytes);
 
-  // Node: use built-in zlib
   if (isNodeRuntime()) {
     const { gunzipSync } = await import("node:zlib");
     return normalizeToUint8Array(gunzipSync(view));
   }
 
-  // Browser/edge runtimes: DecompressionStream with gzip
   if (typeof DecompressionStream === "undefined")
     throw new Error("gzip decompression not available in this environment.");
 
   return decompressWithStream(view, "gzip");
 }
 
-async function decompressWithStream(bytes, format) {
+async function decompressWithStream(bytes: BufferSource, format: CompressionFormat) {
   const ds = new DecompressionStream(format);
   const writer = ds.writable.getWriter();
   await writer.write(bytes);

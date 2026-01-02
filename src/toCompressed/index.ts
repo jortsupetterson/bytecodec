@@ -1,14 +1,7 @@
-import {
-  normalizeToUint8Array,
-  isNodeRuntime,
-} from "../0-HELPERS/index.js";
+import type { ByteSource } from "../index.js";
+import { normalizeToUint8Array, isNodeRuntime } from "../0-HELPERS/index.js";
 
-/**
- * Gzip-compress bytes. Returns a Promise to support browser streams.
- * @param {import("../index.d.ts").ByteSource} bytes
- * @returns {Promise<Uint8Array>}
- */
-export async function toCompressed(bytes) {
+export async function toCompressed(bytes: ByteSource): Promise<Uint8Array> {
   const view = normalizeToUint8Array(bytes);
 
   // Node: use built-in zlib
@@ -24,7 +17,7 @@ export async function toCompressed(bytes) {
   return compressWithStream(view, "gzip");
 }
 
-async function compressWithStream(bytes, format) {
+async function compressWithStream(bytes: BufferSource, format: CompressionFormat) {
   const cs = new CompressionStream(format);
   const writer = cs.writable.getWriter();
   await writer.write(bytes);

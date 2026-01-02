@@ -1,11 +1,6 @@
 import { textEncoder } from "../0-HELPERS/index.js";
 
-/**
- * Encode a UTF-8 string into bytes.
- * @param {string} text
- * @returns {Uint8Array}
- */
-export function fromString(text) {
+export function fromString(text: string): Uint8Array {
   if (typeof text !== "string")
     throw new TypeError("fromString expects a string input");
 

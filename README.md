@@ -1,12 +1,14 @@
 # bytecodec
 
-Zero-dependency byte utilities for base64url, UTF-8 strings, and JSON that behave the same in browsers and Node.
+Zero-dependency byte utilities for base64url, UTF-8 strings, JSON, and BufferSource helpers that behave the same in browsers and Node.
 
 ## Highlights
 
 - URL-safe base64 without padding; no external deps or bundler shims.
 - UTF-8 encode/decode for `Uint8Array`, `ArrayBuffer`, `ArrayBufferView`, or `number[]`.
 - JSON helpers (JSON.stringify/parse + UTF-8) for payloads, tokens, and storage.
+- BufferSource helper that returns a Uint8Array view (zero-copy for ArrayBuffer-backed inputs).
+- Built on ES2015 typed arrays (Uint8Array/ArrayBuffer), widely available since 2015 across modern browsers; Node >=18 supported.
 - Constant-time `equals()` for any supported byte input.
 - `generateNonce()` helper for CSP headers, state parameters, and other integrity tokens (returns base64url).
 - ESM-first, tree-shakeable, bundled TypeScript definitions, side-effect free.
@@ -34,6 +36,7 @@ import {
   toCompressed, // gzip: bytes -> bytes (Promise)
   fromCompressed, // gzip: bytes -> bytes (Promise)
   concat, // join multiple byte sources
+  toBufferSource, // ByteSource -> BufferSource (Uint8Array view)
   equals, // constant-time compare for any ByteSource
   generateNonce, // 32 random bytes as base64url
   Bytes, // optional class wrapper
@@ -60,6 +63,10 @@ const restored = await fromCompressed(compressed);
 // Concatenate
 const joined = concat([textBytes, [33, 34]]); // Uint8Array [..textBytes, 33, 34]
 
+// BufferSource (zero-copy view)
+const view = payload.subarray(1, 4);
+const bufferSource = toBufferSource(view); // Uint8Array view (shared buffer)
+
 // Constant-time compare
 const isSame = equals(joined, concat([textBytes, [33, 34]])); // true
 
@@ -76,6 +83,7 @@ Bytes.toJSON(jsonBytes); // or Bytes.toJSON('{"ok":true}')
 await Bytes.toCompressed(payload);
 await Bytes.fromCompressed(compressed);
 Bytes.concat([payload, [1, 2, 3]]);
+Bytes.toBufferSource(payload);
 Bytes.equals(payload, Uint8Array.from(payload));
 ```
 
@@ -90,16 +98,18 @@ Bytes.equals(payload, Uint8Array.from(payload));
 - `toCompressed(bytes: ByteSource): Promise<Uint8Array>` - gzip compress bytes (Node zlib or browser CompressionStream).
 - `fromCompressed(bytes: ByteSource): Promise<Uint8Array>` - gzip decompress bytes (Node zlib or browser DecompressionStream).
 - `concat(sources: ByteSource[]): Uint8Array` - normalize and join multiple byte sources into one Uint8Array.
+- `toBufferSource(bytes: ByteSource): BufferSource` - normalize to a Uint8Array view (zero-copy for ArrayBuffer-backed inputs).
 - `equals(a: ByteSource, b: ByteSource): boolean` - timing-safe equality check for any supported byte inputs.
 - `generateNonce(): Base64URLString` - 32 random bytes encoded as base64url; ready for CSP headers, OAuth state, CSRF tokens, or any transport/storage-friendly nonce.
-- `Bytes` - class wrapper exposing the same static methods above (including `equals`; `generateNonce` stays a standalone helper).
+- `Bytes` - class wrapper exposing the same static methods above (including `toBufferSource` and `equals`; `generateNonce` stays a standalone helper).
 
 ### Types
 
 ```ts
-type Base64URLString = string;
 type ByteSource = Uint8Array | ArrayBuffer | ArrayBufferView | number[];
 ```
+
+`Base64URLString` and `BufferSource` are built-in DOM types in TypeScript.
 
 ## Runtime behavior
 
@@ -112,8 +122,23 @@ type ByteSource = Uint8Array | ArrayBuffer | ArrayBufferView | number[];
 ```sh
 npm test
 # or
-node test.js
+npm run build && node test.js
 ```
+
+## Benchmarks
+
+`node benchmark/bench.js` on Node v22.14.0 (win32 x64). Results vary by machine.
+
+| Benchmark        | Result                     |
+| ---------------- | -------------------------- |
+| base64 encode    | 239,369 ops/s (208.9 ms)   |
+| base64 decode    | 652,390 ops/s (76.6 ms)    |
+| utf8 roundtrip   | 1,078,309 ops/s (46.4 ms)  |
+| json roundtrip   | 316,316 ops/s (63.2 ms)    |
+| concat 3 buffers | 863,609 ops/s (57.9 ms)    |
+| equals same      | 5,601,064 ops/s (35.7 ms)  |
+| equals diff      | 1,503,392 ops/s (133.0 ms) |
+| gzip roundtrip   | 6,728 ops/s (59.5 ms)      |
 
 ## License
 

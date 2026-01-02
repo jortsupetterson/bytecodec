@@ -10,7 +10,7 @@ import {
   concat,
   equals,
   Bytes,
-} from "../src/index.js";
+} from "../dist/index.js";
 
 function formatOps(iterations, durationMs) {
   const opsPerSec = Math.round((iterations / durationMs) * 1000);

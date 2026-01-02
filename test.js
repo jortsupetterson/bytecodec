@@ -10,10 +10,11 @@ import {
   toCompressed,
   fromCompressed,
   concat,
+  toBufferSource,
   generateNonce,
   equals,
   Bytes,
-} from "./src/index.js";
+} from "./dist/index.js";
 
 async function runTest(name, fn) {
   console.time(name);
@@ -82,6 +83,28 @@ async function testConcat() {
   console.log("concat merged length:", merged.byteLength);
 }
 
+async function testBufferSource() {
+  const source = Uint8Array.from([10, 20, 30, 40]);
+  const slice = source.subarray(1, 3);
+  const view = toBufferSource(slice);
+  assert.strictEqual(view, slice);
+  assert.deepStrictEqual([...view], [20, 30]);
+
+  const dataView = new DataView(source.buffer, 2, 2);
+  const dataViewResult = toBufferSource(dataView);
+  assert.ok(dataViewResult instanceof Uint8Array);
+  assert.deepStrictEqual([...dataViewResult], [30, 40]);
+
+  const fromBuffer = toBufferSource(source.buffer);
+  assert.ok(fromBuffer instanceof Uint8Array);
+  assert.strictEqual(fromBuffer.buffer, source.buffer);
+
+  const wrapperView = Bytes.toBufferSource(slice);
+  assert.strictEqual(wrapperView, slice);
+
+  console.log("buffersource length:", view.byteLength);
+}
+
 async function testEquals() {
   const left = Uint8Array.from([1, 2, 3, 4]);
   const same = new Uint8Array(left);
@@ -146,6 +169,7 @@ async function main() {
   await runTest("json", testJSON);
   await runTest("compression", testCompression);
   await runTest("concat", testConcat);
+  await runTest("buffersource", testBufferSource);
   await runTest("equals", testEquals);
   await runTest("nonce", testNonce);
   await runTest("bytes-wrapper", testBytesWrapper);

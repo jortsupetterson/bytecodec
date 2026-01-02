@@ -1,18 +1,14 @@
-/**
- * Decode a base64url string into raw bytes.
- * @param {import("../index.d.ts").Base64URLString} base64UrlString
- * @returns {Uint8Array}
- */
-export function fromBase64UrlString(base64UrlString) {
+export function fromBase64UrlString(
+  base64UrlString: Base64URLString
+): Uint8Array {
   const base64String = toBase64String(base64UrlString);
   return decodeBase64(base64String);
 }
 
 /**
- * @param {import("../index.d.ts").Base64URLString} base64UrlString
- * @returns {string}
+ * From b64 URL to b64 string
  */
-function toBase64String(base64UrlString) {
+function toBase64String(base64UrlString: Base64URLString): string {
   let base64String = base64UrlString.replace(/-/g, "+").replace(/_/g, "/");
   const mod = base64String.length & 3;
   if (mod === 2) base64String += "==";
@@ -21,11 +17,7 @@ function toBase64String(base64UrlString) {
   return base64String;
 }
 
-/**
- * @param {string} base64String
- * @returns {Uint8Array}
- */
-function decodeBase64(base64String) {
+function decodeBase64(base64String: string): Uint8Array {
   if (typeof Buffer !== "undefined" && typeof Buffer.from === "function")
     return new Uint8Array(Buffer.from(base64String, "base64"));
 

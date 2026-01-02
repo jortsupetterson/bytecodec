@@ -1,23 +1,15 @@
+import type { ByteSource } from "../index.js";
 import { normalizeToUint8Array } from "../0-HELPERS/index.js";
 
 const chunkSize = 0x8000;
 
-/**
- * Encode raw bytes into a URL-safe base64 string.
- * @param {import("../index.d.ts").ByteSource} bytes
- * @returns {import("../index.d.ts").Base64URLString}
- */
-export function toBase64UrlString(bytes) {
+export function toBase64UrlString(bytes: ByteSource): Base64URLString {
   const view = normalizeToUint8Array(bytes);
   const base64 = encodeBase64(view);
   return base64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
 }
 
-/**
- * @param {Uint8Array} bytes
- * @returns {string}
- */
-function encodeBase64(bytes) {
+function encodeBase64(bytes: Uint8Array): string {
   if (typeof Buffer !== "undefined" && typeof Buffer.from === "function")
     return Buffer.from(bytes).toString("base64");
 
